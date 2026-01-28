@@ -1,14 +1,11 @@
-FROM maven:3.9.9-openjdk-17 AS builder
+# Stage 1: Build the application
+FROM openjdk:17-jdk-slim AS build
 WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:resolve
-COPY src ./src
-RUN mvn clean package -DskipTests
+COPY . /app
+RUN javac HelloWorld.java
 
-# Stage 2: Create the final, lean runtime image
+# Stage 2: Run the application
 FROM openjdk:17-jre-slim
 WORKDIR /app
-# Copy the JAR file from the builder stage
-COPY --from=builder /app/target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY --from=build /app/HelloWorld.class .
+CMD ["java", "HelloWorld"]
